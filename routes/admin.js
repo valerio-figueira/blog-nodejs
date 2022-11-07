@@ -1,0 +1,198 @@
+const express = require('express');
+// O router é utilizado para criar rotas em arquivos separados
+const router = express.Router();
+const mongoose = require('mongoose');
+require('../models/Category');
+const Category = mongoose.model('categories')
+require('../models/Posts')
+const Posts = mongoose.model('posts')
+
+router.get('/', (req, res) => {
+    res.render("admin/index")
+});
+
+router.get('/categories', (req, res) => {
+    Category.find().lean().sort({date: 'desc'}).then(category => {
+        res.render('admin/categories', {category: category})
+    }).catch(error => {
+        req.flash("error_msg", "Falha ao listar categorias" + error)
+        res.redirect("/admin")
+    })
+});
+router.get('/categories/add', (req, res) => {
+    res.render('admin/addcategories')
+});
+router.post('/categories/new', (req, res) => {
+
+    const errors = []
+
+    if(!req.body.name || typeof req.body.name == undefined || req.body.name == null){
+        errors.push({text: "Nome inválido"})
+    }
+    if(!req.body.slug || typeof req.body.slug == undefined || req.body.slug == null){
+        errors.push({text: "Slug inválido!"})
+    }
+    if(req.body.name.length < 3){
+        errors.push({text: "Nome da categoria muito pequeno"})
+    }
+
+    if(errors.length > 0){
+        res.render("admin/addcategories", {errors: errors})
+    } else{
+        const newCategory = {
+            // fazem referência ao campo name="" do input
+            name: req.body.name,
+            slug: req.body.slug
+        }
+    
+        new Category(newCategory).save()
+        .then((object) => {
+            console.log('Nova categoria cadastrada com sucesso!')
+            console.log(object)
+            req.flash("success_msg", "Categoria criada com Sucesso!")
+            res.redirect("/admin/categories")
+        }).catch((error) => {
+            req.flash("error_msg", "Erro ao cadastrar categoria: " + error)
+            res.redirect('/admin')
+        });
+    }
+});
+
+router.get('/categories/edit/:id', (req, res) => {
+    Category.findOne({_id: req.params.id}).lean()
+    .then((category) => {
+        res.render("admin/editcategories", {category})
+    }).catch(error => {
+        req.flash("error_msg", "Erro ao encontrar categoria: " + error)
+        res.redirect("/admin/categories")
+    })
+});
+
+router.post('/categories/edit', (req, res) => {
+    Category.findOne({_id: req.body.id})
+    .then(category => {
+        const errors = [];
+
+        if(!req.body.name || typeof req.body.name == undefined || req.body.name == null){
+            errors.push({text: "Nome não declarado."})
+        }
+        if(req.body.name.length < 3){
+            errors.push({text: "Adicione mais caracteres ao nome."})
+        }
+        if(!req.body.slug || typeof req.body.slug == undefined || req.body.slug == null){
+            errors.push({text: "Slug não declarado."})
+        }
+        if(req.body.slug.length < 3){
+            errors.push({text: "Adicione mais caracteres ao slug."})
+        }
+        if(req.body.name == category.name && req.body.slug == category.slug){
+            errors.push({text: ""})
+            req.flash("error_msg", errorsValidation)
+            res.redirect('/admin/categories/edit/' + category._id);
+        }
+        
+        if(errors.length > 0){
+            const errorsValidation = errors.map(error => {
+                return error.text
+            }).join(" ");
+
+            req.flash("error_msg", errorsValidation)
+            res.redirect('/admin/categories/edit/' + category._id);
+        } else{
+            category.name = req.body.name;
+            category.slug = req.body.slug;
+    
+            category.save()
+            .then(() => {
+                req.flash("success_msg", "Categoria editada com sucesso!")
+                res.redirect("/admin/categories")
+            })
+            .catch(error => {
+                req.flash("error_msg", "Não foi possível salvar as alterações: " + error)
+                res.redirect("/admin/categories")
+            });
+        };
+
+    }).catch(error => {
+        req.flash("error_msg", "Houve um erro ao editar categoria: " + error)
+        res.redirect("/admin/categories")
+    });
+});
+
+router.post('/categories/delete', (req, res) => {
+    Category.deleteOne({_id: req.body.id})
+    .then(() => {
+        req.flash("success_msg", "Categoria removida com sucesso!");
+        res.redirect("/admin/categories")
+    }).catch(error => {
+        req.flash("error_msg", "Não foi possível remover a categoria: " + error);
+        res.redirect("/admin/categories");
+    })
+})
+
+
+    // Posts
+    router.get("/posts", (req, res) => {
+        Posts.find().lean().populate({path: 'category', strictPopulate: false}).sort({data: "desc"})
+        .then((posts) => {
+            res.render('admin/posts', {posts})
+        }).catch(error => {
+            req.flash("error_msg", "Ocoreu um erro: " + error)
+            res.redirect('/admin')
+        })
+    });
+
+    router.get("/posts/add", (req, res) => {
+        Category.find().lean().then(categories => {
+            res.render("admin/addposts", {categories})
+        }).catch(error => {
+            req.flash("error_msg", "Houve um erro ao carregar o formulário: " + error)
+            res.redirect("/posts")
+        })
+    })
+
+    router.post("/posts/new", (req, res) => {
+        const errors = [];
+
+        if(!req.body.title || typeof req.body.title == undefined || req.body.title == null){
+            errors.push({text: "É preciso preencher o título da postagem"})
+        }
+
+        if(!req.body.slug || typeof req.body.slug == undefined || req.body.slug == null){
+            errors.push({text: "É preciso preencher o slug da postagem"})
+        }
+
+        if(!req.body.description || typeof req.body.description == undefined || req.body.description == null){
+            errors.push({text: "É preciso preencher a descrição da postagem"})
+        }
+
+        if(!req.body.content || typeof req.body.content == undefined || req.body.content == null){
+            errors.push({text: "É preciso preencher o conteúdo da postagem"})
+        }
+
+        if(req.body.category == 0){
+            errors.push({text: "Categoria inválida, registre pelo menos uma categoria para poder continuar"})
+        }
+
+        if(errors.length > 0){
+            res.render("admin/addposts", {errors})
+        } else{
+            const newPost = {
+                title: req.body.title,
+                description: req.body.description,
+                content: req.body.content,
+                category: req.body.category,
+                slug: req.body.slug,
+            }
+
+            new Posts(newPost).save().then(() => {
+                req.flash("success_msg", "Postagem criada com sucesso!")
+                res.redirect("/admin/posts")
+            }).catch(error => {
+                req.flash("error_msg", "Não foi possível salvar a postagem: " + error)
+                res.redirect("/admin/posts")
+            })
+        }
+    })
+
+module.exports = router;
