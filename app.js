@@ -1,6 +1,6 @@
 /*
 DEPENDENCIAS INSTALADAS
-body-parser, mongoose, express, express-handlebars, nodemon, express-session, connect-flash
+body-parser, mongoose, express, express-handlebars, nodemon, express-session, connect-flash, dotenv
 */
 const express = require('express');
 const app = express();
@@ -12,6 +12,7 @@ const admin = require('./routes/admin');
 const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
+require('dotenv').config();
 
 // O middleware é um intermediador entre as requisições e respostas e nos ajuda a manipular com maior precisão as informações requisitadas antes que elas cheguem ao destino final da aplicação. Ele é executado sempre a cada nova requisição.
 
@@ -42,15 +43,6 @@ const flash = require('connect-flash');
         app.engine('handlebars', handlebars.engine({defaultLayout: 'main'}));
         app.set('view engine', 'handlebars');
 
-    // Mongoose
-        mongoose.Promise = global.Promise;
-        mongoose.connect('mongodb://localhost/blogapp')
-        .then(() => {
-            console.log('Conectado ao MongoDB!')
-        }).catch((error) => {
-            console.error('Falha na conexão: ' + error)
-        });
-
     // Public Dir
         app.use(express.static(path.join(__dirname, "public")));
 
@@ -67,14 +59,18 @@ const flash = require('connect-flash');
     app.use('/admin', admin); 
 
 
+    // Mongoose
+    const DB_USER  = process.env.DB_USER;
+    const DB_PASSWORD = encodeURIComponent(process.env.DB_PASSWORD);
 
-// Port
-const PORT = 8081
-app.listen(PORT, () => {
-    console.log('Running Server...')
-});
-
-
-
-
-
+    mongoose.Promise = global.Promise;
+    mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@apicluster.vimpoeg.mongodb.net/blogapp?retryWrites=true&w=majority`)
+    .then(() => {
+        console.log('Conectado ao MongoDB!')
+        const PORT = 8081
+        app.listen(PORT, () => {
+            console.log('Running Server...')
+        });
+    }).catch((error) => {
+        console.error('Falha na conexão: ' + error)
+    });

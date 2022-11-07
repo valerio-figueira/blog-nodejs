@@ -1,16 +1,18 @@
-{{#each errors}}
+<div class="col-8">
+  {{#each errors}}
     <div class="alert alert-danger">{{text}}</div>
-{{else}}
-{{/each}}
-<h3 class="text-center">Nova Categoria</h3>
-<div class="card mx-auto mt-4" style="width: 18rem;">
-  <div class="card-body">
-    <form action="/admin/categories/new" method="POST">
-        <label for="name">Nome: </label>
-        <input type="text" id="name" name="name" placeholder="Nome da categoria" class="form-control">
-        <label for="slug" class="mt-3">Slug: </label>
-        <input type="text" id="slug" name="slug" placeholder="Slug da categoria" class="form-control">
-        <button type="submit" class="btn btn-success mt-3 mx-auto d-block">Criar categoria</button>
-    </form>
+  {{else}}
+  {{/each}}
+  <h3 class="text-center">Nova Categoria</h3>
+  <div class="card mx-auto mt-4" style="width: 18rem;">
+    <div class="card-body">
+      <form action="/admin/categories/new" method="POST">
+          <label for="name">Nome: </label>
+          <input type="text" id="name" name="name" placeholder="Nome da categoria" class="form-control">
+          <label for="slug" class="mt-3">Slug: </label>
+          <input type="text" id="slug" name="slug" placeholder="Slug da categoria" class="form-control">
+          <button type="submit" class="btn btn-success mt-3 mx-auto d-block">Criar categoria</button>
+      </form>
+    </div>
   </div>
 </div>
