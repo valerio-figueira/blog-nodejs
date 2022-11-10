@@ -1,0 +1,10 @@
+<div class="col-8">
+    {{#each categories}}
+    <div class="mb-1">
+        <a href="/category/{{slug}}">{{name}}</a>
+    </div>
+
+    {{else}}
+    <h3>Nenhuma categoria encontrada</h3>
+    {{/each}}
+</div>

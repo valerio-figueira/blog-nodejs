@@ -3,15 +3,16 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 require('../models/Category');
-const Category = mongoose.model('categories')
-require('../models/Posts')
-const Posts = mongoose.model('posts')
+const Category = mongoose.model('categories');
+require('../models/Posts');
+const Posts = mongoose.model('posts');
+const {eAdmin} = require("../helpers/eAdmin");
 
-router.get('/', (req, res) => {
+router.get('/', eAdmin, (req, res) => {
     res.render("admin/index")
 });
 
-router.get('/categories', (req, res) => {
+router.get('/categories', eAdmin, (req, res) => {
     Category.find().lean().sort({date: 'desc'}).then(category => {
         res.render('admin/categories', {category: category})
     }).catch(error => {
@@ -19,10 +20,10 @@ router.get('/categories', (req, res) => {
         res.redirect("/admin")
     })
 });
-router.get('/categories/add', (req, res) => {
+router.get('/categories/add', eAdmin, (req, res) => {
     res.render('admin/addcategories')
 });
-router.post('/categories/new', (req, res) => {
+router.post('/categories/new', eAdmin, (req, res) => {
 
     const errors = []
 
@@ -46,9 +47,7 @@ router.post('/categories/new', (req, res) => {
         }
     
         new Category(newCategory).save()
-        .then((object) => {
-            console.log('Nova categoria cadastrada com sucesso!')
-            console.log(object)
+        .then(() => {
             req.flash("success_msg", "Categoria criada com Sucesso!")
             res.redirect("/admin/categories")
         }).catch((error) => {
@@ -58,7 +57,7 @@ router.post('/categories/new', (req, res) => {
     }
 });
 
-router.get('/categories/edit/:id', (req, res) => {
+router.get('/categories/edit/:id', eAdmin, (req, res) => {
     Category.findOne({_id: req.params.id}).lean()
     .then((category) => {
         res.render("admin/editcategories", {category})
@@ -68,7 +67,7 @@ router.get('/categories/edit/:id', (req, res) => {
     })
 });
 
-router.post('/categories/edit', (req, res) => {
+router.post('/categories/edit', eAdmin, (req, res) => {
     Category.findOne({_id: req.body.id})
     .then(category => {
         const errors = [];
@@ -119,7 +118,7 @@ router.post('/categories/edit', (req, res) => {
     });
 });
 
-router.post('/categories/delete', (req, res) => {
+router.post('/categories/delete', eAdmin, (req, res) => {
     Category.deleteOne({_id: req.body.id})
     .then(() => {
         req.flash("success_msg", "Categoria removida com sucesso!");
@@ -132,7 +131,7 @@ router.post('/categories/delete', (req, res) => {
 
 
     // Posts
-    router.get("/posts", (req, res) => {
+    router.get("/posts", eAdmin, (req, res) => {
         Posts.find().lean().populate({path: 'category', strictPopulate: false}).sort({data: "desc"})
         .then((posts) => {
             res.render('admin/posts', {posts})
@@ -142,7 +141,7 @@ router.post('/categories/delete', (req, res) => {
         })
     });
 
-    router.get("/posts/add", (req, res) => {
+    router.get("/posts/add", eAdmin, (req, res) => {
         Category.find().lean().then(categories => {
             res.render("admin/addposts", {categories})
         }).catch(error => {
@@ -151,7 +150,7 @@ router.post('/categories/delete', (req, res) => {
         })
     })
 
-    router.post("/posts/new", (req, res) => {
+    router.post("/posts/new", eAdmin, (req, res) => {
         const errors = [];
 
         if(!req.body.title || typeof req.body.title == undefined || req.body.title == null){
@@ -193,6 +192,55 @@ router.post('/categories/delete', (req, res) => {
                 res.redirect("/admin/posts")
             })
         }
+    })
+
+    router.get("/posts/edit/:id", eAdmin, (req, res) => {
+        Posts.findOne({_id: req.params.id}).populate({path: 'category', strictPopulate: false}).lean()
+        .then(post => {
+            Category.find().lean().then(categories => {
+                res.render("admin/editposts", {post, categories})
+            }).catch(error => {
+                req.flash("error_msg", "Houve um erro ao carregar o formulário: " + error)
+                res.redirect("/admin/posts")
+            })
+        }).catch(error => {
+            req.flash("error_msg", "Houve um erro ao carregar o formulário de edição: " + error)
+            res.redirect("/admin/posts")
+        })
+    })
+
+    router.post("/posts/edit/updatepost", eAdmin, (req, res) => {
+        Posts.findOne({_id: req.body.id})
+        .then(post => {
+            post.title = req.body.title;
+            post.slug = req.body.slug;
+            post.content = req.body.content;
+            post.description = req.body.description;
+            post.category = req.body.category;
+
+            post.save()
+            .then(() => {
+                req.flash("success_msg", "Postagem editada com sucesso!")
+                res.redirect("/admin/posts")
+            })
+            .catch(error => {
+                req.flash("error_msg", "Não foi possível salvar as alterações: " + error)
+                res.redirect("/admin/posts")
+            });
+        }).catch(error => {
+            req.flash("error_msg", "Não foi possível localizar a postagem: " + error)
+            res.redirect("/admin/posts")
+        })
+    })
+
+    router.post("/posts/remove", eAdmin, (req, res) => {
+        Posts.deleteOne({_id: req.body.id}).then(() => {
+            req.flash("success_msg", "Postagem removida com sucesso!")
+            res.redirect("/admin/posts");
+        }).catch(error => {
+            req.flash("error_msg", "Não foi possível remover a postagem: " + error)
+            res.redirect("/admin/posts")
+        })
     })
 
 module.exports = router;

@@ -11,6 +11,11 @@
                 <small class="text-muted"><span class="fw-bold">Categoria:</span> {{category.name}}</small>
                 <small class="text-muted p-3"><span class="fw-bold">Label:</span> {{slug}}</small>
                 <small class="d-block text-muted"><span class="fw-bold">Data da postagem:</span> {{date}}</small>
+                <a href="/admin/posts/edit/{{_id}}" class="btn btn-success mt-3">Editar Postagem</a>
+                <form action="/admin/posts/remove" method="POST" class="d-inline">
+                    <input type="hidden" value="{{_id}}" id="id">
+                    <button type="submit" class="btn btn-danger mt-3">Remover Postagem</button>
+                </form>
             </div>
         </div>
     {{else}}

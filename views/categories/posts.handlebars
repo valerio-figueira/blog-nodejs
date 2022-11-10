@@ -1,0 +1,16 @@
+<div class="col-8">
+    <h2>Postagens: </h2>
+    {{#each posts}}
+    <div class="card mt-3">
+        <div class="card-body">
+            <h3>{{title}}</h3>
+            <small class="d-block"><span class="fw-bold">Descrição:</span> {{description}}</small>
+            <a href="/post/{{slug}}" class="btn btn-success mt-3 mb-3">Saiba Mais...</a>
+            <small class="text-muted d-block"><span class="fw-bold">Categoria:</span> {{category.name}}</small>
+            <small class="d-block text-muted"><span class="fw-bold">Data da postagem:</span> {{date}}</small>
+        </div>
+    </div>
+    {{else}}
+    <h3>Nenhuma Postagem</h3>
+    {{/each}}
+</div>
