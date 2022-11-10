@@ -68,7 +68,7 @@ router.post("/register", (req, res) => {
             };
         }).catch(error => {
             req.flash("error_msg", "Não foi possível concluir o cadastro: " + error)
-            res.redirect("/register")
+            res.redirect("/users/register")
         });
     };
 });
@@ -84,5 +84,16 @@ router.post("/login", (req, res, next) => {
         failureFlash: true
     })(req, res, next);
 });
+
+router.get("/logout", (req, res) => {
+    req.logout(error => {
+        if(error){
+            return next(error);
+        }
+        req.flash("success_msg", "Deslogado com sucesso");
+        res.redirect("/");
+    });
+});
+
 
 module.exports = router;

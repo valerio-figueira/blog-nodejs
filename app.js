@@ -90,7 +90,6 @@ require("./config/auth")(passport);
         Category.findOne({slug: req.params.slug}).lean().then(category => {
             if(category){
                 Post.find({category: category._id}).lean().then(posts => {
-                    console.log(posts)
                     res.render("categories/posts", {posts, category})
                 }).catch(error => {
                     req.flash("error_msg", "Não foi possível listar as postagens: " + error)
@@ -137,7 +136,7 @@ require("./config/auth")(passport);
     mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@apicluster.vimpoeg.mongodb.net/blogapp?retryWrites=true&w=majority`)
     .then(() => {
         console.log('Conectado ao MongoDB!')
-        const PORT = 8081
+        const PORT = process.env.PORT || 8081
         app.listen(PORT, () => {
             console.log('Running Server...')
         });

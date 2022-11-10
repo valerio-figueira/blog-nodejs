@@ -11,5 +11,24 @@
     "nodemon": "^2.0.20",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0"
-  }
+  },
+  "name": "blog-app",
+  "description": "Blog app made with NodeJS",
+  "version": "1.0.0",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valerio-figueira/blog-nodejs.git"
+  },
+  "author": "Valerio Figueira",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/valerio-figueira/blog-nodejs/issues"
+  },
+  "homepage": "https://github.com/valerio-figueira/blog-nodejs#readme"
 }
