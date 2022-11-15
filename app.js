@@ -72,7 +72,7 @@ require("./config/auth")(passport);
 // Rotas
     app.get('/', (req, res) => {
         Post.find().populate("category")
-        .sort({data: "desc"}).lean()
+        .sort({date: "desc"}).lean()
         .then(posts => {
             res.render('index', {posts})
         }).catch(error => {
@@ -109,12 +109,8 @@ require("./config/auth")(passport);
         })
     })
 
-    app.get("*", (req, res) => {
-        res.status(404).render("404/404error")
-    })
-
-    app.get("/post/:slug", (req, res) => {
-        Post.findOne({slug: req.params.slug}).lean().then(post => {
+    app.get("/post/:slug", async (req, res) => {
+        await Post.findOne({slug: req.params.slug}).lean().then(post => {
             if(post){
                 res.render("post/index", {post})
             } else{
@@ -127,7 +123,9 @@ require("./config/auth")(passport);
         })
     })
 
-
+    app.get("*", (req, res) => {
+        res.status(404).render("404/404error")
+    })
 
 
 
