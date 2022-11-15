@@ -65,6 +65,10 @@ require("./config/auth")(passport);
         });
 
 
+        app.use('/admin', admin);
+        app.use('/users', users);
+
+
 // Rotas
     app.get('/', (req, res) => {
         Post.find().populate("category")
@@ -105,8 +109,8 @@ require("./config/auth")(passport);
         })
     })
 
-    app.get("/404", (req, res) => {
-        res.send("Erro 404!")
+    app.get("*", (req, res) => {
+        res.status(404).render("404/404error")
     })
 
     app.get("/post/:slug", (req, res) => {
@@ -124,8 +128,7 @@ require("./config/auth")(passport);
     })
 
 
-    app.use('/admin', admin);
-    app.use('/users', users);
+
 
 
     // Mongoose
